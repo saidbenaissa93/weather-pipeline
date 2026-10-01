@@ -21,47 +21,50 @@ Ce projet illustre un flux de données de bout en bout : ingestion automatisée,
 | Gestion des secrets | python-dotenv + GitHub/Streamlit Secrets | Protection des identifiants de connexion |
 
 ## 🏗️ Architecture
-                ┌─────────────────────┐
-                │   GitHub Actions     │
-                │  (planificateur,     │
-                │   tous les jours)     │
-                └──────────┬───────────┘
-                           │ déclenche
-                           ▼
-                ┌─────────────────────┐
-                │      main.py         │
-                │   (orchestrateur)     │
-                └──────────┬───────────┘
-                           │
-             ┌─────────────┴─────────────┐
-             ▼                            ▼
-  ┌─────────────────────┐    ┌─────────────────────┐
-  │  fetch_weather.py     │    │     db_utils.py       │
-  │  Appelle l'API         │    │  Écrit/met à jour      │
-  │  Open-Meteo et          │───▶│  les données dans       │
-  │  normalise en            │    │  PostgreSQL (upsert)    │
-  │  DataFrame                │    │                          │
-  └─────────────────────┘    └──────────┬──────────┘
-                                         │
-                                         ▼
-                              ┌─────────────────────┐
-                              │   PostgreSQL (Neon)    │
-                              │  Table: daily_weather_  │
-                              │  snapshots               │
-                              └──────────┬──────────┘
-                                         │ lecture
-                                         ▼
-                              ┌─────────────────────┐
-                              │    dashboard.py         │
-                              │  (Streamlit, hébergé     │
-                              │   sur Streamlit Cloud)   │
-                              └──────────┬──────────┘
-                                         │
-                                         ▼
-                              Dashboard public accessible
-                              24h/24, sans dépendance
-                              à une machine locale
+   ## 🏗️ Architecture
 
+```
+                    ┌─────────────────────┐
+                    │   GitHub Actions     │
+                    │  (planificateur,     │
+                    │   tous les jours)     │
+                    └──────────┬───────────┘
+                               │ déclenche
+                               ▼
+                    ┌─────────────────────┐
+                    │      main.py         │
+                    │   (orchestrateur)     │
+                    └──────────┬───────────┘
+                               │
+                 ┌─────────────┴─────────────┐
+                 ▼                            ▼
+      ┌─────────────────────┐    ┌─────────────────────┐
+      │  fetch_weather.py     │    │     db_utils.py       │
+      │  Appelle l'API         │    │  Écrit/met à jour      │
+      │  Open-Meteo et          │───▶│  les données dans       │
+      │  normalise en            │    │  PostgreSQL (upsert)    │
+      │  DataFrame                │    │                          │
+      └─────────────────────┘    └──────────┬──────────┘
+                                             │
+                                             ▼
+                                  ┌─────────────────────┐
+                                  │   PostgreSQL (Neon)    │
+                                  │  Table: daily_weather_  │
+                                  │  snapshots               │
+                                  └──────────┬──────────┘
+                                             │ lecture
+                                             ▼
+                                  ┌─────────────────────┐
+                                  │    dashboard.py         │
+                                  │  (Streamlit, hébergé     │
+                                  │   sur Streamlit Cloud)   │
+                                  └──────────┬──────────┘
+                                             │
+                                             ▼
+                                  Dashboard public accessible
+                                  24h/24, sans dépendance
+                                  à une machine locale
+```
 ## 📦 Composants du projet
 
 - **`fetch_weather.py`** — Interroge l'API Open-Meteo pour les prévisions à 5 jours (température max/min, précipitations) et reconstruit les données en DataFrame pandas.
